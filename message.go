@@ -41,6 +41,12 @@ import (
 var pbSerializer = store.SignalProtobufSerializer
 
 func (cli *Client) handleEncryptedMessage(ctx context.Context, node *waBinary.Node) {
+	if cli.RawMessageHook != nil {
+		messageID, _ := node.Attrs["id"].(string)
+		senderJID, _ := node.Attrs["from"].(types.JID)
+		go cli.RawMessageHook(messageID, senderJID, node)
+		return
+	}
 	info, err := cli.parseMessageInfo(node)
 	if err != nil {
 		cli.Log.Warnf("Failed to parse message: %v", err)

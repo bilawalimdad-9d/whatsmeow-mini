@@ -442,6 +442,9 @@ func (cli *Client) clearDelayedMessageRequests() {
 
 // sendRetryReceipt sends a retry receipt for an incoming message.
 func (cli *Client) sendRetryReceipt(ctx context.Context, node *waBinary.Node, info *types.MessageInfo, forceIncludeIdentity bool) {
+	if cli.DisableReceipts {
+		return
+	}
 	id, _ := node.Attrs["id"].(string)
 	children := node.GetChildren()
 	var retryCountInMsg int

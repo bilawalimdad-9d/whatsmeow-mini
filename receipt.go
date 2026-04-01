@@ -146,6 +146,9 @@ const (
 )
 
 func (cli *Client) sendAck(ctx context.Context, node *waBinary.Node, error int) {
+	if cli.DisableAcks {
+		return
+	}
 	attrs := waBinary.Attrs{
 		"class": node.Tag,
 		"id":    node.Attrs["id"],
@@ -275,6 +278,9 @@ func buildBaseReceipt(id string, node *waBinary.Node) waBinary.Attrs {
 }
 
 func (cli *Client) sendMessageReceipt(ctx context.Context, info *types.MessageInfo, node *waBinary.Node) {
+	if cli.DisableReceipts {
+		return
+	}
 	attrs := buildBaseReceipt(info.ID, node)
 	if info.IsFromMe {
 		attrs["type"] = string(types.ReceiptTypeSender)

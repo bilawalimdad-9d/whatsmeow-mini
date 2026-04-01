@@ -83,6 +83,15 @@ type Client struct {
 	EnableDecryptedEventBuffer bool
 	lastDecryptedBufferClear   time.Time
 
+	// DisableAcks prevents the client from automatically sending an <ack> stanza for incoming events.
+	DisableAcks bool
+	// DisableReceipts prevents the client from automatically sending <receipt> stanzas for incoming messages.
+	DisableReceipts bool
+
+	// RawMessageHook is called immediately when an encrypted message node is received,
+	// bypassing all decryption, unmarshalling, and automated acks.
+	RawMessageHook func(messageID string, sender types.JID, rawNode *waBinary.Node)
+
 	DisableLoginAutoReconnect bool
 
 	sendActiveReceipts atomic.Uint32
