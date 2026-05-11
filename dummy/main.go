@@ -58,8 +58,9 @@ func main() {
 	clientLog := waLog.Stdout("Client", "DEBUG", true)
 	client := whatsmeow.NewClient(deviceStore, clientLog)
 
-	// 2. Enable observer mode flags!
-	client.DisableAcks = true
+	// 2. Observer: no delivery <receipt>; message stanza ack skipped via RawMessageHook early return.
+	// Transport <ack> for notification/receipt/etc. stays enabled (DisableAcks=false).
+	client.DisableAcks = false
 	client.DisableReceipts = true
 
 	// 3. Set the raw webhook! (This short-circuits all parsing/decryption)
