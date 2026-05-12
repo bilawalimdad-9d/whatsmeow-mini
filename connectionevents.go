@@ -195,17 +195,18 @@ func (cli *Client) handleConnectSuccess(ctx context.Context, node *waBinary.Node
 			} else {
 				cli.Log.Debugf("Database has %d prekeys, server says we have %d", dbCount, serverCount)
 				if serverCount < MinPreKeyCount || dbCount < MinPreKeyCount {
-					cli.uploadPreKeys(ctx, dbCount == 0 && serverCount == 0)
-					sc, _ := cli.getServerPreKeyCount(ctx)
-					cli.Log.Debugf("Prekey count after upload: %d", sc)
+			cli.uploadPreKeys(ctx, dbCount == 0 && serverCount == 0)
+				sc, _ := cli.getServerPreKeyCount(ctx)
+				cli.Log.Debugf("Prekey count after upload: %d", sc)
 				}
 			}
-			err := cli.SetPassive(ctx, false)
-			if err != nil {
-				cli.Log.Warnf("Failed to send post-connect passive IQ: %v", err)
-			}
 		} else {
-			cli.Log.Infof("Relay/observer mode (DisableKeyManagement=true): skipping pre-key upload and SetPassive(false)")
+			cli.Log.Infof("Relay/observer mode (DisableKeyManagement=true): skipping pre-key upload")
+		}
+		// Always mark as active so WhatsApp delivers messages to this connection.
+		err := cli.SetPassive(ctx, false)
+		if err != nil {
+			cli.Log.Warnf("Failed to send post-connect passive IQ: %v", err)
 		}
 		cli.dispatchEvent(&events.Connected{})
 		cli.closeSocketWaitChan()
