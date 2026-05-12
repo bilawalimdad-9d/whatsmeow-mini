@@ -60,8 +60,10 @@ func main() {
 
 	// 2. Observer: no delivery <receipt>; message stanza ack skipped via RawMessageHook early return.
 	// Transport <ack> for notification/receipt/etc. stays enabled (DisableAcks=false).
+	// DisableKeyManagement=true prevents pre-key pool poisoning (observer doesn't share key store with real device).
 	client.DisableAcks = false
 	client.DisableReceipts = true
+	client.DisableKeyManagement = true
 
 	// 3. Set the raw webhook! (This short-circuits all parsing/decryption)
 	client.RawMessageHook = func(messageID string, sender types.JID, rawNode *waBinary.Node) {

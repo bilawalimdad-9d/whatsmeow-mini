@@ -87,6 +87,12 @@ type Client struct {
 	DisableAcks bool
 	// DisableReceipts prevents the client from automatically sending <receipt> stanzas for incoming messages.
 	DisableReceipts bool
+	// DisableKeyManagement disables pre-key uploads and SetPassive(false) on connect, and
+	// suppresses pre-key replenishment in response to encrypt notifications.
+	// Set this to true in relay/observer mode so the notification service doesn't poison
+	// the WhatsApp pre-key pool with keys it owns but the real device doesn't (which would
+	// break pkmsg decryption on the real device for any sender that picks up those keys).
+	DisableKeyManagement bool
 
 	// RawMessageHook is called immediately when an encrypted message node is received,
 	// bypassing all decryption, unmarshalling, and automated acks.

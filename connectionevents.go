@@ -182,9 +182,9 @@ func (cli *Client) handleConnectSuccess(ctx context.Context, node *waBinary.Node
 	// so do this unconditionally for a few months to ensure everyone gets the row.
 	cli.StoreLIDPNMapping(ctx, cli.Store.GetLID(), cli.Store.GetJID())
 	go func() {
-		if !cli.DisableAcks {
+		if !cli.DisableKeyManagement {
 			// Only manage pre-keys when operating as a real device.
-			// In relay/ghost mode (DisableAcks=true) the notification service
+			// In relay/observer mode (DisableKeyManagement=true) the notification service
 			// must NEVER upload pre-keys — it doesn't share its key store with
 			// the real device, so uploaded keys would poison the pool and break
 			// pkmsg decryption on-device.
@@ -205,7 +205,7 @@ func (cli *Client) handleConnectSuccess(ctx context.Context, node *waBinary.Node
 				cli.Log.Warnf("Failed to send post-connect passive IQ: %v", err)
 			}
 		} else {
-			cli.Log.Infof("Relay mode: skipping pre-key upload and SetPassive(false)")
+			cli.Log.Infof("Relay/observer mode (DisableKeyManagement=true): skipping pre-key upload and SetPassive(false)")
 		}
 		cli.dispatchEvent(&events.Connected{})
 		cli.closeSocketWaitChan()
