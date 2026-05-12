@@ -182,21 +182,30 @@ func (cli *Client) handleConnectSuccess(ctx context.Context, node *waBinary.Node
 	// so do this unconditionally for a few months to ensure everyone gets the row.
 	cli.StoreLIDPNMapping(ctx, cli.Store.GetLID(), cli.Store.GetJID())
 	go func() {
-		if dbCount, err := cli.Store.PreKeys.UploadedPreKeyCount(ctx); err != nil {
-			cli.Log.Errorf("Failed to get number of prekeys in database: %v", err)
-		} else if serverCount, err := cli.getServerPreKeyCount(ctx); err != nil {
-			cli.Log.Warnf("Failed to get number of prekeys on server: %v", err)
-		} else {
-			cli.Log.Debugf("Database has %d prekeys, server says we have %d", dbCount, serverCount)
-			if serverCount < MinPreKeyCount || dbCount < MinPreKeyCount {
-				cli.uploadPreKeys(ctx, dbCount == 0 && serverCount == 0)
-				sc, _ := cli.getServerPreKeyCount(ctx)
-				cli.Log.Debugf("Prekey count after upload: %d", sc)
+		if !cli.DisableAcks {
+			// Only manage pre-keys when operating as a real device.
+			// In relay/ghost mode (DisableAcks=true) the notification service
+			// must NEVER upload pre-keys — it doesn't share its key store with
+			// the real device, so uploaded keys would poison the pool and break
+			// pkmsg decryption on-device.
+			if dbCount, err := cli.Store.PreKeys.UploadedPreKeyCount(ctx); err != nil {
+				cli.Log.Errorf("Failed to get number of prekeys in database: %v", err)
+			} else if serverCount, err := cli.getServerPreKeyCount(ctx); err != nil {
+				cli.Log.Warnf("Failed to get number of prekeys on server: %v", err)
+			} else {
+				cli.Log.Debugf("Database has %d prekeys, server says we have %d", dbCount, serverCount)
+				if serverCount < MinPreKeyCount || dbCount < MinPreKeyCount {
+					cli.uploadPreKeys(ctx, dbCount == 0 && serverCount == 0)
+					sc, _ := cli.getServerPreKeyCount(ctx)
+					cli.Log.Debugf("Prekey count after upload: %d", sc)
+				}
 			}
-		}
-		err := cli.SetPassive(ctx, false)
-		if err != nil {
-			cli.Log.Warnf("Failed to send post-connect passive IQ: %v", err)
+			err := cli.SetPassive(ctx, false)
+			if err != nil {
+				cli.Log.Warnf("Failed to send post-connect passive IQ: %v", err)
+			}
+		} else {
+			cli.Log.Infof("Relay mode: skipping pre-key upload and SetPassive(false)")
 		}
 		cli.dispatchEvent(&events.Connected{})
 		cli.closeSocketWaitChan()

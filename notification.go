@@ -33,7 +33,7 @@ func (cli *Client) handleEncryptNotification(ctx context.Context, node *waBinary
 			return
 		}
 		cli.Log.Infof("Got prekey count from server: %s", node.XMLString())
-		if otksLeft < MinPreKeyCount {
+		if otksLeft < MinPreKeyCount && !cli.DisableAcks {
 			cli.uploadPreKeys(ctx, false)
 		}
 	} else if _, ok := node.GetOptionalChildByTag("identity"); ok {
